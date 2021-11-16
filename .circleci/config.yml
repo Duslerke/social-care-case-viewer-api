@@ -20,15 +20,14 @@ jobs:
       - run:
           name: Scrape
           command: |
-            echo "Start!"
             set +e
             echo "https://dr03nduqxh.execute-api.eu-west-2.amazonaws.com/staging/" > ./baseURL.txt
-            echo "Post File!"
+            echo "Start!"
             # Should be parameterized when in the pipeline
             projectDirectory='.'
             # No need to search the project root or tests project
             apiProjectDirectory=$( find $projectDirectory -mindepth 1 -type d -iname '*Api' )
-            echo "Before functions!"
+
             function find_files_using_interface {
                 local interface=$1
                 local startDirectory=$2
@@ -132,6 +131,13 @@ jobs:
                 sed -E 's/\|$//g;s/(.+)/\(\?:\1\)/'
             }
 
+            # Might be overkill, but it's best to make sure
+            # That the calls are to the local scope functions
+            # This has a weakness of that the following pattern won't match:
+            # LegitMethodNameThatWontMatch(StaticClass.AnyMethod())
+            # It won't match, because we have braces within braces. The "AnyMethod" will
+            # match instead of the desired one... need some OR magic to resolve this.
+            # It's low priority right now bcz it's a super rare case.
             function fileMethodCallsWithinMethodPattern {
                 local fileName=$1
                 echo "(?<![\w>?] )(?<!\.)\b$(fileMethodNamesPattern $fileName)(?=\((?:[^\(\)]+)?\))"
@@ -141,7 +147,7 @@ jobs:
                 local methodName=$1
                 local filePath=$2
                 pcregrep -M "$(methodBlock $methodName)" $filePath | \
-                grep -oP "$(fileMethodCallsWithinMethodPattern $filePath)"
+                grep -oP "$(fileMethodCallsWithinMethodPattern $filePath)" 
             }
 
             dependencyVariablePattern='private(?: readonly)? \K\w+ \K\w+(?=;)'
@@ -166,13 +172,10 @@ jobs:
 
             endpointMetadata='(?:\[[^\[\]]+\]\s+)+public (?:async )?\S+ \w+\b(?! : Controller\n)'
             methodBlock='\([^\(\)]*\)(\s+)\{[\s\S]+?\1\}'
-            echo "Before main function!"
-            
+
             function scanAndFollowDependencies {
                 local scannedFile=$1
                 local accumulator=$2
-                
-                echo "Acc: $accumulator"
 
                 if [ -z "$scannedFile" ]
                 then
@@ -180,43 +183,31 @@ jobs:
                     echo "Dead End Case!"
                     return 1
                 fi
-                
-                echo "Pre-deps array"
-                
+
                 local dependencyVariablesSearchPattern=$(grep -oP -e "$dependencyVariablePattern" $scannedFile | \
                     tr '\n' '|' | sed -E 's/\|$//g' )
-
-                echo "Pre-dep lookup"
 
                 eval "declare -A dependencyTypeLookup=($(\
                     grep -oP "private(?: readonly)? \K\w+ \w+(?=\;)" $scannedFile | \
                     sed -E 's/(\w+)\s(\w+)/\[\2\]=\1/g' | \
                     tr '\n' ' '))"
 
-                echo "pre-dep count"
 
                 local dependencyCount=${#dependencyTypeLookup[@]}
 
                 (grep -wq ": Controller" $scannedFile)
                 local isController=$?
-                
-                echo "Post isController"
 
                 if [[ $isController -ne 1 ]]; then
-                    echo "Is Controller"
                     local targetMethod=$( echo $accumulator | grep -oP '(?<=Name: )\w+' )
                     local targetMethodBlock=$(pcregrep -M "$(methodBlock $targetMethod)" $scannedFile)
                 else
-                    echo "Not Controller"
                     local targetMethod=$(echo $accumulator | grep -oP '(?<= )\w+(?=!\>)')
                     local targetMethodBlock=$(pcregrep -M "$(methodBlock $targetMethod)" $scannedFile)
                 fi
-                
-                echo "Pre-If end of the road"
 
                 if [[ -z "$targetMethodBlock" || $dependencyCount -eq 0 ]]
                 then
-                    echo "DB Context"
                     local dbType=$(determineDBContextType $scannedFile)
                     local dbName=$(determineDBContextName $scannedFile)
 
@@ -229,37 +220,63 @@ jobs:
                     echo "<DbName: $dbName! DbType: $dbType! Name: $eName! Type: $eType! Route: $eRoute!>"
                     return 0
                 fi
-                    echo "Not DB Context"
+
                     getFileScopeMethodCallsWithinMethod $targetMethod $scannedFile | while read localCall ; do {
                         scanAndFollowDependencies "$scannedFile" "$(append_to_endpoint_info "$accumulator" "$localCall")"
                     } ; done
-                    
-                    echo "Pre- for each dependency recurse"
-                    
+
                     echo "$targetMethodBlock" | \
                     grep -oP "(?>(?:$dependencyVariablesSearchPattern)\.\w+)" | while read dependencyCall ; do {                
+                        # There should also be a part that determines the type of the input & output objects, but that skyrockets the complexity of
+                        # the script & hence should be done as separate PR. Luckily this is only important for dis-ambiguing the C# method overloads,
+                        # which tend to get used quite rarely, so it doesn't affect the accuracy of the output too much.
                         dependencyMethod=$(echo "$dependencyCall" | grep -oP '\.\K\w+')    
                         dependencyVarName=$(echo "$dependencyCall" | grep -oP '\w+(?=\.)')
                         dependencyFileName=$(find_dependency_file_name_in_api_directory "${dependencyTypeLookup[$dependencyVarName]}")
-                        echo "Post nodbc, each-dep recurse variables"
                         scanAndFollowDependencies "$dependencyFileName" "$(append_to_endpoint_info "$accumulator" "$dependencyMethod")"
                     } ; done
             }
-            echo "Find Controllers!"
+
             controllersList=$(find "$apiProjectDirectory/V1/Controllers" -mindepth 1)
-            echo "Before loop!"
+
             for controllerFile in $controllersList
             do
-                echo "$controllerFile"
                 controllerRoute=$(get_controller_route "$controllerFile" | sed -E 's/\//\\\//g')
-                echo "$controllerRoute"
                 pcregrep -M "$endpointMetadata" $controllerFile | \
                 perl -0777 -pe "s/(?:(?:\[Http(\w+)\]|\[Route\(\"([^\"]+)\"\)\]|(?:\[[^\[\]]+\]))\s+)+public (?:async )?\S+ (\w+)/<Route: $controllerRoute\/\2! Type: \1! Name: \3! CallChain: \3!>/gm; s/R: .+?\K\/\/(?=[^!]+!)/\//gm" | \
                 grep -oP '<[^<>]+>' | while read endpointInfo ; do {
                     scanAndFollowDependencies "$controllerFile" "$endpointInfo"
                 } ; done
-                echo "Loop Done!"
-            done
+            done | sort -u | {
+                IFS=''; read -r -d '' executionTreeOutput; IFS='\n';
+                databases=$(echo -e "$executionTreeOutput" | grep -oP '<DbName: \w+! DbType: \w+!' | sort -u)
+                jsonDbDepObj=$(echo -e "$databases" | while read database ; do {
+                    dbTechName=$(get_field_from_accumulator DbName "$database")
+                    dbType=$(get_field_from_accumulator DbType "$database")
+                    jsonEndpointsList=$(echo -e "$executionTreeOutput" | grep -P "^$database" | perl -pe 's/<.+?! Name: (\w+)! Type: (\w+)! Route: ([^!]+)!>/\{"name":"\1"\,"httpMethod":"\2","path":"\3"}/gm' | tr '\n' ',' | sed -E 's/,$//')
+                    echo -e "{\"technicalName\":\"$dbTechName\",\"type\":\"$dbType\",\"endpointsUsingIt\":[$jsonEndpointsList]}"
+                } ; done | tr '\n' ',' | sed -E 's/,$//')
+
+                dependenciesObject="{\"databases\":[$jsonDbDepObj]}"
+                ghPageUrl="https://github.com/LBHackney-IT/$CIRCLE_PROJECT_REPONAME"
+                projectName=$(echo "$CIRCLE_PROJECT_REPONAME" | sed -E 's/_|-/ /g;s/lbh //;s/\<([a-z])/\U\1/g;')
+                ghRepoId=$(curl -sS "https://api.github.com/repos/LBHackney-IT/$CIRCLE_PROJECT_REPONAME" | pcregrep -oM '^{\s+"id": ?\K\d+(?=,)')
+                baseUrl=$([[ -e test/baseURL.txt ]] && (cat 'test/baseURL.txt' | perl -pe 's/\*+(?=\.amazonaws)/eu-west-2/'))
+
+                #For now, hardcoded environment
+                ENVIRONMENT="staging"
+                baseUrlEnvObj="{\"$ENVIRONMENT\":\"$baseUrl\"}"
+
+                apiRecord="{\"name\":\"$projectName\",\"githubId\":1$ghRepoId,\"githubUrl\":\"$ghPageUrl\",\"baseUrl\":$baseUrlEnvObj,\"dependencies\":$dependenciesObject}"
+
+                #curl -X POST \
+                #    -H "Content-Type: application/json" \
+                #    -H "x-api-key: $API_KEY" \
+                #    -d "$apiRecord" \
+                #    "$API_BASE_URL/v1/apis"
+                echo -e "$apiRecord"
+            }
+
             echo "End!"
 
 workflows:
