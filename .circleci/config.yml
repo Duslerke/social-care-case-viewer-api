@@ -220,6 +220,7 @@ jobs:
 
                 if [[ -z "$targetMethodBlock" || $dependencyCount -eq 0 ]]
                 then
+                    echo "DB Context"
                     local dbType=$(determineDBContextType $scannedFile)
                     local dbName=$(determineDBContextName $scannedFile)
 
@@ -232,19 +233,19 @@ jobs:
                     echo "<DbName: $dbName! DbType: $dbType! Name: $eName! Type: $eType! Route: $eRoute!>"
                     return 0
                 fi
-
+                    echo "Not DB Context"
                     getFileScopeMethodCallsWithinMethod $targetMethod $scannedFile | while read localCall ; do {
                         scanAndFollowDependencies "$scannedFile" "$(append_to_endpoint_info "$accumulator" "$localCall")"
                     } ; done
-
+                    
+                    echo "Pre- for each dependency recurse"
+                    
                     echo "$targetMethodBlock" | \
                     grep -oP "(?>(?:$dependencyVariablesSearchPattern)\.\w+)" | while read dependencyCall ; do {                
-                        # There should also be a part that determines the type of the input & output objects, but that skyrockets the complexity of
-                        # the script & hence should be done as separate PR. Luckily this is only important for dis-ambiguing the C# method overloads,
-                        # which tend to get used quite rarely, so it doesn't affect the accuracy of the output too much.
                         dependencyMethod=$(echo "$dependencyCall" | grep -oP '\.\K\w+')    
                         dependencyVarName=$(echo "$dependencyCall" | grep -oP '\w+(?=\.)')
                         dependencyFileName=$(find_dependency_file_name_in_api_directory "${dependencyTypeLookup[$dependencyVarName]}")
+                        echo "Post nodbc, each-dep recurse variables"
                         scanAndFollowDependencies "$dependencyFileName" "$(append_to_endpoint_info "$accumulator" "$dependencyMethod")"
                     } ; done
             }
