@@ -184,20 +184,27 @@ jobs:
                     echo "Dead End Case!"
                     return 1
                 fi
-
+                
+                echo "Pre-deps array"
+                
                 local dependencyVariablesSearchPattern=$(grep -oP -e "$dependencyVariablePattern" $scannedFile | \
                     tr '\n' '|' | sed -E 's/\|$//g' )
+
+                echo "Pre-dep lookup"
 
                 eval "declare -A dependencyTypeLookup=($(\
                     grep -oP "private(?: readonly)? \K\w+ \w+(?=\;)" $scannedFile | \
                     sed -E 's/(\w+)\s(\w+)/\[\2\]=\1/g' | \
                     tr '\n' ' '))"
 
+                echo "pre-dep count"
 
                 local dependencyCount=${#dependencyTypeLookup[@]}
 
                 (grep -wq ": Controller" $scannedFile)
                 local isController=$?
+                
+                echo "Post isController"
 
                 if [[ $isController -ne 1 ]]; then
                     local targetMethod=$( echo $accumulator | grep -oP '(?<=Name: )\w+' )
