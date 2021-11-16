@@ -142,8 +142,10 @@ jobs:
                 local ddvar=$(pcregrep -M "$(methodBlock $methodName)" $filePath)
                 #| \
                 echo "omg"
-                echo -e "$ddvar"
+                echo "$ddvar"
                 echo "wtf?"
+                fileMethodCallsWithinMethodPattern $filePath
+                echo "precra"
                 echo "$ddvar" | grep -oP "$(fileMethodCallsWithinMethodPattern $filePath)"
                 echo "Fun end!"
             }
