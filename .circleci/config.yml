@@ -134,7 +134,7 @@ jobs:
 
             function fileMethodCallsWithinMethodPattern {
                 local fileName=$1
-                echo "(?<![\w>?] )\b$(fileMethodNamesPattern $fileName)(?=\((?:[^\(\)]+)?\))"
+                echo "(?<![\w>?] )(?<!\.)\b$(fileMethodNamesPattern $fileName)(?=\((?:[^\(\)]+)?\))"
             }
 
             function getFileScopeMethodCallsWithinMethod {
