@@ -135,7 +135,6 @@ jobs:
             }
 
             function getFileScopeMethodCallsWithinMethod {
-                echo "KW: $1, $2"
                 local methodName=$1
                 local filePath=$2
                 pcregrep -M "$(methodBlock $methodName)" $filePath | \
@@ -228,14 +227,10 @@ jobs:
                     return 0
                 fi
                     echo "Not DB Context"
-                    getFileScopeMethodCallsWithinMethod $targetMethod $scannedFile | while read localCall ; do {
-                        echo "Within the block!!!!!"
-                        echo "$scannedFile"
-                        echo -e "$targetMethod"
-                        echo "$localCall"
-                        echo "AG: $accumulator"
-                        scanAndFollowDependencies "$scannedFile" "$(append_to_endpoint_info "$accumulator" "$localCall")"
-                    } ; done
+                    getFileScopeMethodCallsWithinMethod $targetMethod $scannedFile
+                    #| while read localCall ; do {
+                    #    scanAndFollowDependencies "$scannedFile" "$(append_to_endpoint_info "$accumulator" "$localCall")"
+                    #} ; done
                     
                     echo "Pre- for each dependency recurse"
                     
