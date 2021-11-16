@@ -236,6 +236,7 @@ jobs:
             echo "Find Controllers!"
             controllersList=$(find "$apiProjectDirectory/V1/Controllers" -mindepth 1)
             echo "Before loop!"
+            echo "$controllersList!"
             for controllerFile in $controllersList
             do
                 controllerRoute=$(get_controller_route "$controllerFile" | sed -E 's/\//\\\//g')
