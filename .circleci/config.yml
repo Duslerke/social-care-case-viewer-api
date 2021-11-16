@@ -171,9 +171,12 @@ jobs:
             endpointMetadata='(?:\[[^\[\]]+\]\s+)+public (?:async )?\S+ \w+\b(?! : Controller\n)'
             methodBlock='\([^\(\)]*\)(\s+)\{[\s\S]+?\1\}'
             echo "Before main function!"
+            
             function scanAndFollowDependencies {
                 local scannedFile=$1
                 local accumulator=$2
+                
+                echo "Acc: $accumulator"
 
                 if [ -z "$scannedFile" ]
                 then
