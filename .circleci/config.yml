@@ -142,6 +142,7 @@ jobs:
             }
 
             function getFileScopeMethodCallsWithinMethod {
+                echo "FN!"
                 local methodName=$1
                 local filePath=$2
                 pcregrep -M "$(methodBlock $methodName)" $filePath | \
