@@ -267,8 +267,10 @@ jobs:
                 ENVIRONMENT="staging"
                 baseUrlEnvObj="{\"$ENVIRONMENT\":\"$baseUrl\"}"
 
-                apiRecord="{\"name\":\"$projectName\",\"githubId\":1$ghRepoId,\"githubUrl\":\"$ghPageUrl\",\"baseUrl\":$baseUrlEnvObj,\"dependencies\":$dependenciesObject}"
+                apiRecord="{\"name\":\"$projectName\",\"githubId\":2$ghRepoId,\"githubUrl\":\"$ghPageUrl\",\"baseUrl\":$baseUrlEnvObj,\"dependencies\":$dependenciesObject}"
 
+                echo "$apiRecord"
+                
                 curl -X POST \
                     -H "Content-Type: application/json" \
                     -H "x-api-key: $API_KEY" \
