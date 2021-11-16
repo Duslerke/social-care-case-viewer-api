@@ -237,15 +237,17 @@ jobs:
             echo "Find Controllers!"
             controllersList=$(find "$apiProjectDirectory/V1/Controllers" -mindepth 1)
             echo "Before loop!"
-            echo "$controllersList!"
             for controllerFile in $controllersList
             do
+                echo "$controllerFile"
                 controllerRoute=$(get_controller_route "$controllerFile" | sed -E 's/\//\\\//g')
+                echo "$controllerRoute"
                 pcregrep -M "$endpointMetadata" $controllerFile | \
                 perl -0777 -pe "s/(?:(?:\[Http(\w+)\]|\[Route\(\"([^\"]+)\"\)\]|(?:\[[^\[\]]+\]))\s+)+public (?:async )?\S+ (\w+)/<Route: $controllerRoute\/\2! Type: \1! Name: \3! CallChain: \3!>/gm; s/R: .+?\K\/\/(?=[^!]+!)/\//gm" | \
                 grep -oP '<[^<>]+>' | while read endpointInfo ; do {
                     scanAndFollowDependencies "$controllerFile" "$endpointInfo"
                 } ; done
+                echo "Loop Done!"
             done
             echo "End!"
 
