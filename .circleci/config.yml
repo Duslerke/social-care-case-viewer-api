@@ -149,7 +149,7 @@ jobs:
                 echo "wtf?"
                 fileMethodCallsWithinMethodPattern $filePath
                 echo "precra"
-                echo "asd" | grep -oP "(?<![\w>?] )\b(?:GetCases|GetCaseByRecordId|CreateCaseRecord)(?=\((?:[^\(\)]+)?\))"
+                echo "asd" | grep -oP "\b(?:GetCases|GetCaseByRecordId|CreateCaseRecord)(?=\((?:[^\(\)]+)?\))"
                 echo "$ddvar" | grep -oP "$(fileMethodCallsWithinMethodPattern $filePath)"
                 echo "Fun end!"
             }
