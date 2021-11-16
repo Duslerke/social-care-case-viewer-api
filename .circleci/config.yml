@@ -1,26 +1,9 @@
 version: 2.1
 
-orbs:
-  aws-ecr: circleci/aws-ecr@3.0.0
-  aws-cli: circleci/aws-cli@0.1.9
-  aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
-
 executors:
   docker-python:
     docker:
       - image: circleci/python:3.7
-  docker-terraform:
-    docker:
-      - image: "hashicorp/terraform:light"
-  docker-dotnet:
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1
-
-references:
-  workspace_root: &workspace_root "~"
-  attach_workspace: &attach_workspace
-    attach_workspace:
-      at: *workspace_root
 
 jobs:
   build-and-test:
