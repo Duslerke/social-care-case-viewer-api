@@ -261,7 +261,7 @@ jobs:
                 ghPageUrl="https://github.com/LBHackney-IT/$CIRCLE_PROJECT_REPONAME"
                 projectName=$(echo "$CIRCLE_PROJECT_REPONAME" | sed -E 's/_|-/ /g;s/lbh //;s/\<([a-z])/\U\1/g;')
                 ghRepoId=$(curl -sS "https://api.github.com/repos/LBHackney-IT/$CIRCLE_PROJECT_REPONAME" | pcregrep -oM '^{\s+"id": ?\K\d+(?=,)')
-                baseUrl=$([[ -e test/baseURL.txt ]] && (cat 'test/baseURL.txt' | perl -pe 's/\*+(?=\.amazonaws)/eu-west-2/'))
+                baseUrl=$([[ -e ./baseURL.txt ]] && (cat './baseURL.txt' | perl -pe 's/\*+(?=\.amazonaws)/eu-west-2/'))
 
                 #For now, hardcoded environment
                 ENVIRONMENT="staging"
