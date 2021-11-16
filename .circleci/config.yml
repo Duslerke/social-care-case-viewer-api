@@ -140,7 +140,10 @@ jobs:
                 local filePath=$2
                 pcregrep -M "$(methodBlock $methodName)" $filePath
                 #| \
-                #grep -oP "$(fileMethodCallsWithinMethodPattern $filePath)"
+                #grep -oP "$(
+                echo "fn calls within block:"
+                fileMethodCallsWithinMethodPattern $filePath
+                #)"
                 echo "Fun end!"
             }
 
