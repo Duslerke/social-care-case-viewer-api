@@ -1,16 +1,19 @@
 version: 2.1
 
 executors:
-  docker-python:
+  docker-ubu:
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/base:2021.04
 
 jobs:
   build-and-test:
-    executor: docker-python
+    executor: docker-ubu
     steps:
       - checkout
       - setup_remote_docker
+      - run:
+          name: mach
+          command: uname -a
       - run:
           name: dependencies
           command: sudo apt-get install -y pcregrep
