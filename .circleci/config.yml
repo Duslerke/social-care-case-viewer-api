@@ -129,20 +129,13 @@ jobs:
                 sed -E 's/\|$//g;s/(.+)/\(\?:\1\)/'
             }
 
-            # Might be overkill, but it's best to make sure
-            # That the calls are to the local scope functions
-            # This has a weakness of that the following pattern won't match:
-            # LegitMethodNameThatWontMatch(StaticClass.AnyMethod())
-            # It won't match, because we have braces within braces. The "AnyMethod" will
-            # match instead of the desired one... need some OR magic to resolve this.
-            # It's low priority right now bcz it's a super rare case.
             function fileMethodCallsWithinMethodPattern {
                 local fileName=$1
                 echo "(?<![\w>?] )\b$(fileMethodNamesPattern $fileName)(?=\((?:[^\(\)]+)?\))"
             }
 
             function getFileScopeMethodCallsWithinMethod {
-                echo "KW: $methodName, $filePath"
+                echo "KW: $1, $2"
                 local methodName=$1
                 local filePath=$2
                 pcregrep -M "$(methodBlock $methodName)" $filePath | \
