@@ -138,12 +138,12 @@ jobs:
                 echo "Fun Start: $1, $2" 
                 local methodName=$1
                 local filePath=$2
-                pcregrep -M "$(methodBlock $methodName)" $filePath
+                local ddvar=$(pcregrep -M "$(methodBlock $methodName)" $filePath)
                 #| \
-                #grep -oP "$(
-                echo "fn calls within block:"
-                fileMethodCallsWithinMethodPattern $filePath
-                #)"
+                echo "omg"
+                echo -e "$ddvar"
+                echo "wtf?"
+                echo "$ddvar" | grep -oP "$(fileMethodCallsWithinMethodPattern $filePath)"
                 echo "Fun end!"
             }
 
