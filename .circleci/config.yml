@@ -135,10 +135,13 @@ jobs:
             }
 
             function getFileScopeMethodCallsWithinMethod {
+                echo "Fun Start: $1, $2" 
                 local methodName=$1
                 local filePath=$2
-                pcregrep -M "$(methodBlock $methodName)" $filePath | \
-                grep -oP "$(fileMethodCallsWithinMethodPattern $filePath)" 
+                pcregrep -M "$(methodBlock $methodName)" $filePath
+                #| \
+                #grep -oP "$(fileMethodCallsWithinMethodPattern $filePath)"
+                echo "Fun end!"
             }
 
             dependencyVariablePattern='private(?: readonly)? \K\w+ \K\w+(?=;)'
