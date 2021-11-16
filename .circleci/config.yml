@@ -17,6 +17,7 @@ jobs:
       - run:
           name: Scrape
           command: |
+            set +e
             echo "Start!"
             echo "https://dr03nduqxh.execute-api.eu-west-2.amazonaws.com/staging/" > ./baseURL.txt
             # Should be parameterized when in the pipeline
