@@ -269,12 +269,11 @@ jobs:
 
                 apiRecord="{\"name\":\"$projectName\",\"githubId\":1$ghRepoId,\"githubUrl\":\"$ghPageUrl\",\"baseUrl\":$baseUrlEnvObj,\"dependencies\":$dependenciesObject}"
 
-                #curl -X POST \
-                #    -H "Content-Type: application/json" \
-                #    -H "x-api-key: $API_KEY" \
-                #    -d "$apiRecord" \
-                #    "$API_BASE_URL/v1/apis"
-                echo -e "$apiRecord"
+                curl -X POST \
+                    -H "Content-Type: application/json" \
+                    -H "x-api-key: $API_KEY" \
+                    -d "$apiRecord" \
+                    "$API_BASE_URL/v1/apis"
             }
 
             echo "End!"
