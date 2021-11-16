@@ -235,6 +235,11 @@ jobs:
                 fi
                     echo "Not DB Context"
                     getFileScopeMethodCallsWithinMethod $targetMethod $scannedFile | while read localCall ; do {
+                        echo "Within the block!!!!!"
+                        echo "$scannedFile"
+                        echo -e "$targetMethod"
+                        echo "$localCall"
+                        echo "AG: $accumulator"
                         scanAndFollowDependencies "$scannedFile" "$(append_to_endpoint_info "$accumulator" "$localCall")"
                     } ; done
                     
