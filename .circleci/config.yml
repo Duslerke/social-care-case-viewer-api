@@ -19,11 +19,12 @@ jobs:
           command: |
             echo "Start!"
             echo "https://dr03nduqxh.execute-api.eu-west-2.amazonaws.com/staging/" > ./baseURL.txt
+            echo "Post File!"
             # Should be parameterized when in the pipeline
             projectDirectory='.'
             # No need to search the project root or tests project
             apiProjectDirectory=$( find $projectDirectory -mindepth 1 -type d -iname '*Api' )
-
+            echo "Before functions!"
             function find_files_using_interface {
                 local interface=$1
                 local startDirectory=$2
@@ -168,7 +169,7 @@ jobs:
 
             endpointMetadata='(?:\[[^\[\]]+\]\s+)+public (?:async )?\S+ \w+\b(?! : Controller\n)'
             methodBlock='\([^\(\)]*\)(\s+)\{[\s\S]+?\1\}'
-
+            echo "Before main function!"
             function scanAndFollowDependencies {
                 local scannedFile=$1
                 local accumulator=$2
@@ -232,9 +233,9 @@ jobs:
                         scanAndFollowDependencies "$dependencyFileName" "$(append_to_endpoint_info "$accumulator" "$dependencyMethod")"
                     } ; done
             }
-
+            echo "Find Controllers!"
             controllersList=$(find "$apiProjectDirectory/V1/Controllers" -mindepth 1)
-
+            echo "Before loop!"
             for controllerFile in $controllersList
             do
                 controllerRoute=$(get_controller_route "$controllerFile" | sed -E 's/\//\\\//g')
