@@ -7,7 +7,8 @@ executors:
 
 jobs:
   build-and-test:
-    executor: docker-ubu
+    machine:
+      image: ubuntu-2004:202010-01
     steps:
       - checkout
       - setup_remote_docker
