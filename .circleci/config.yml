@@ -22,15 +22,6 @@ jobs:
           command: |
             echo "Start!"
             set +e
-            pcregrep --version
-            grep --version
-            echo "1"
-            echo "asd" | grep -oP "ase"
-            echo "2"
-            echo "asd" | grep -oP "\b(?:GetCases|GetCaseByRecordId|CreateCaseRecord))"
-            echo "3"
-            echo "asd" | grep -oP "\b(?:GetCases|GetCaseByRecordId|CreateCaseRecord)(?=\((?:[^\(\)]+)?\))"
-            echo "4"
             echo "https://dr03nduqxh.execute-api.eu-west-2.amazonaws.com/staging/" > ./baseURL.txt
             echo "Post File!"
             # Should be parameterized when in the pipeline
@@ -147,19 +138,10 @@ jobs:
             }
 
             function getFileScopeMethodCallsWithinMethod {
-                echo "Fun Start: $1, $2" 
                 local methodName=$1
                 local filePath=$2
-                local ddvar=$(pcregrep -M "$(methodBlock $methodName)" $filePath)
-                #| \
-                echo "omg"
-                echo "$ddvar"
-                echo "wtf?"
-                fileMethodCallsWithinMethodPattern $filePath
-                echo "precra"
-                echo "asd" | grep -oP "\b(?:GetCases|GetCaseByRecordId|CreateCaseRecord)(?=\((?:[^\(\)]+)?\))"
-                echo "$ddvar" | grep -oP "$(fileMethodCallsWithinMethodPattern $filePath)"
-                echo "Fun end!"
+                pcregrep -M "$(methodBlock $methodName)" $filePath | \
+                grep -oP "$(fileMethodCallsWithinMethodPattern $filePath)"
             }
 
             dependencyVariablePattern='private(?: readonly)? \K\w+ \K\w+(?=;)'
