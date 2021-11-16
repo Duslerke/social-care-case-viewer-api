@@ -207,12 +207,16 @@ jobs:
                 echo "Post isController"
 
                 if [[ $isController -ne 1 ]]; then
+                    echo "Is Controller"
                     local targetMethod=$( echo $accumulator | grep -oP '(?<=Name: )\w+' )
                     local targetMethodBlock=$(pcregrep -M "$(methodBlock $targetMethod)" $scannedFile)
                 else
+                    echo "Not Controller"
                     local targetMethod=$(echo $accumulator | grep -oP '(?<= )\w+(?=!\>)')
                     local targetMethodBlock=$(pcregrep -M "$(methodBlock $targetMethod)" $scannedFile)
                 fi
+                
+                echo "Pre-If end of the road"
 
                 if [[ -z "$targetMethodBlock" || $dependencyCount -eq 0 ]]
                 then
