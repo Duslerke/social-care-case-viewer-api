@@ -19,6 +19,7 @@ jobs:
           command: |
             echo "Start!"
             pcregrep --version
+            grep --version
             echo "https://dr03nduqxh.execute-api.eu-west-2.amazonaws.com/staging/" > ./baseURL.txt
             echo "Post File!"
             # Should be parameterized when in the pipeline
