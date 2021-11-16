@@ -276,5 +276,4 @@ jobs:
 workflows:
   wf-name:
     jobs:
-      - build-and-test:
-
+      - build-and-test
