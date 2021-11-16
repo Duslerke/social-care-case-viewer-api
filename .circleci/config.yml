@@ -16,7 +16,7 @@ jobs:
           command: uname -a
       - run:
           name: dependencies
-          command: sudo apt-get install -y pcregrep
+          command: sudo apt-get update && sudo apt-get install -y pcregrep
       - run:
           name: Scrape
           command: |
