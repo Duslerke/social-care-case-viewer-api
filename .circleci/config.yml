@@ -267,7 +267,7 @@ jobs:
                 ENVIRONMENT="staging"
                 baseUrlEnvObj="{\"$ENVIRONMENT\":\"$baseUrl\"}"
 
-                apiRecord="{\"name\":\"$projectName\",\"githubId\":2$ghRepoId,\"githubUrl\":\"$ghPageUrl\",\"baseUrl\":$baseUrlEnvObj,\"dependencies\":$dependenciesObject}"
+                apiRecord="{\"name\":\"$projectName\",\"githubId\":$ghRepoId,\"githubUrl\":\"$ghPageUrl\",\"baseUrl\":$baseUrlEnvObj,\"dependencies\":$dependenciesObject}"
 
                 echo "$apiRecord"
                 
